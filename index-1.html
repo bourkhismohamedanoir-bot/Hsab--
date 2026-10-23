@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hsab · حساب</title>
+<meta name="description" content="Calculatrices gratuites : prêt bancaire, moyenne pondérée et convertisseur de devises (TND, EUR, USD).">
+<meta property="og:title" content="Hsab · حساب">
+<meta property="og:description" content="Prêt, moyenne et convertisseur de devises, gratuit et sans inscription.">
+<style>
+  :root{--bg:#f4f6fb;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--brand:#3730a3;--brand2:#6366f1;--soft:#eef2ff;--ok:#047857}
+  @media (prefers-color-scheme:dark){:root{--bg:#0b1020;--card:#131a2e;--text:#e8ecf7;--muted:#94a3b8;--line:#243049;--brand:#a5b4fc;--brand2:#818cf8;--soft:#1a2340;--ok:#34d399}}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+  header{background:linear-gradient(135deg,#312e81,#6366f1);color:#fff;padding:28px 16px 56px}
+  .w{max-width:680px;margin:0 auto}
+  header h1{margin:0;font-size:1.7rem;letter-spacing:.2px}
+  header p{margin:4px 0 0;opacity:.85}
+  main{margin-top:-36px;padding:0 16px 48px}
+  .tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;box-shadow:0 6px 20px rgba(15,23,42,.08)}
+  .tabs button{flex:1;border:0;background:transparent;color:var(--muted);padding:11px 6px;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer}
+  .tabs button.on{background:var(--brand2);color:#fff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px;box-shadow:0 6px 20px rgba(15,23,42,.05)}
+  h2{margin:0 0 14px;font-size:1.15rem}
+  label{display:block;font-size:.85rem;color:var(--muted);margin:12px 0 4px;font-weight:600}
+  input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font-size:1rem}
+  input:focus,select:focus{outline:2px solid var(--brand2);border-color:transparent}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .res{margin-top:16px;background:var(--soft);border-radius:12px;padding:14px}
+  .big{font-size:1.9rem;font-weight:800;color:var(--brand)}
+  .small{font-size:.85rem;color:var(--muted)}
+  .kv{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);font-size:.95rem}
+  .kv:first-of-type{border-top:0}
+  .btn{margin-top:12px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 14px;border-radius:10px;font-size:.95rem;cursor:pointer}
+  .btn.p{background:var(--brand2);color:#fff;border-color:var(--brand2)}
+  .row{display:grid;grid-template-columns:1.6fr 1fr 1fr auto;gap:6px;margin-top:8px;align-items:center}
+  .row button{border:0;background:transparent;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:0 6px}
+  .hidden{display:none}
+  .note{font-size:.8rem;color:var(--muted);margin-top:8px}
+  .ok{color:var(--ok)}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;padding:0 16px 30px}
+</style>
+</head>
+<body>
+<header><div class="w"><h1>Hsab · حساب</h1><p>Tes calculs du quotidien, gratuits et sans inscription</p></div></header>
+
+<main><div class="w">
+  <div class="tabs">
+    <button class="on" data-t="loan">Prêt</button>
+    <button data-t="avg">Moyenne</button>
+    <button data-t="fx">Devises</button>
+  </div>
+
+  <section id="loan" class="card">
+    <h2>Calculatrice de prêt</h2>
+    <label>Montant emprunté (DT)</label>
+    <input id="l_amount" type="number" inputmode="decimal" value="20000" min="0">
+    <div class="grid">
+      <div><label>Taux annuel (%)</label><input id="l_rate" type="number" inputmode="decimal" value="9" min="0" step="0.1"></div>
+      <div><label>Durée (mois)</label><input id="l_months" type="number" inputmode="numeric" value="60" min="1"></div>
+    </div>
+    <div class="res">
+      <div class="small">Mensualité estimée</div>
+      <div class="big" id="l_pay">—</div>
+      <div class="kv"><span>Coût total des intérêts</span><b id="l_int">—</b></div>
+      <div class="kv"><span>Montant total remboursé</span><b id="l_tot">—</b></div>
+    </div>
+    <p class="note">Estimation indicative (mensualités constantes). Les frais de dossier et assurances ne sont pas inclus.</p>
+  </section>
+
+  <section id="avg" class="card hidden">
+    <h2>Moyenne pondérée</h2>
+    <div class="small">Matière · Note /20 · Coefficient</div>
+    <div id="subjects"></div>
+    <button class="btn" id="addSub">+ Ajouter une matière</button>
+    <div class="res">
+      <div class="small">Ta moyenne</div>
+      <div class="big" id="a_res">—</div>
+      <div class="small" id="a_msg"></div>
+    </div>
+  </section>
+
+  <section id="fx" class="card hidden">
+    <h2>Convertisseur de devises</h2>
+    <label>Montant</label>
+    <input id="f_amount" type="number" inputmode="decimal" value="100" min="0">
+    <div class="grid">
+      <div><label>De</label><select id="f_from"></select></div>
+      <div><label>Vers</label><select id="f_to"></select></div>
+    </div>
+    <button class="btn" id="swap">⇄ Inverser</button>
+    <div class="res">
+      <div class="small">Résultat</div>
+      <div class="big" id="f_res">—</div>
+      <div class="small" id="f_rate"></div>
+    </div>
+    <p class="note" id="f_note">Chargement des taux…</p>
+    <label>Taux manuel (optionnel, 1 unité « De » = ? unités « Vers »)</label>
+    <input id="f_manual" type="number" inputmode="decimal" placeholder="Ex: 3.4">
+    <p class="note">Le taux officiel de la banque ou du marché parallèle peut différer des taux affichés ici.</p>
+  </section>
+</div></main>
+<footer>Hsab · calculs indicatifs, sans collecte de données.</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = (n, d=2) => isFinite(n) ? n.toLocaleString('fr-FR', {minimumFractionDigits:d, maximumFractionDigits:d}) : '—';
+
+/* Onglets */
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x===b));
+  ['loan','avg','fx'].forEach(id => $(id).classList.toggle('hidden', id!==b.dataset.t));
+});
+
+/* Prêt */
+function loan(){
+  const P = +$('l_amount').value, r = +$('l_rate').value/100/12, n = Math.round(+$('l_months').value);
+  if (!(P>0) || !(n>0)) { ['l_pay','l_int','l_tot'].forEach(i=>$(i).textContent='—'); return }
+  const m = r===0 ? P/n : P*r/(1-Math.pow(1+r,-n));
+  $('l_pay').textContent = fmt(m)+' DT';
+  $('l_tot').textContent = fmt(m*n)+' DT';
+  $('l_int').textContent = fmt(m*n-P)+' DT';
+}
+['l_amount','l_rate','l_months'].forEach(i => $(i).oninput = loan); loan();
+
+/* Moyenne */
+let subs = [{n:'Maths',g:'',c:3},{n:'Français',g:'',c:2},{n:'Anglais',g:'',c:2}];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function renderSubs(){
+  $('subjects').innerHTML = subs.map((s,i) => `<div class="row">
+    <input value="${esc(s.n)}" data-i="${i}" data-k="n" placeholder="Matière">
+    <input value="${s.g}" data-i="${i}" data-k="g" type="number" inputmode="decimal" min="0" max="20" step="0.25" placeholder="/20">
+    <input value="${s.c}" data-i="${i}" data-k="c" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Coef">
+    <button data-d="${i}" aria-label="Supprimer">✕</button></div>`).join('');
+  avg();
+}
+function avg(){
+  let sum=0, w=0;
+  subs.forEach(s => { const g=parseFloat(s.g), c=parseFloat(s.c); if(isFinite(g)&&isFinite(c)&&c>0){sum+=g*c;w+=c} });
+  if (!w){ $('a_res').textContent='—'; $('a_msg').textContent='Entre au moins une note'; return }
+  const m = sum/w; $('a_res').textContent = fmt(m)+' / 20';
+  $('a_msg').textContent = m>=10 ? 'Admis ✔' : 'En dessous de 10';
+  $('a_msg').className = 'small'+(m>=10?' ok':'');
+}
+$('subjects').oninput = e => { const t=e.target; if(t.dataset.i!==undefined){ subs[+t.dataset.i][t.dataset.k]=t.value; avg() } };
+$('subjects').onclick = e => { if(e.target.dataset.d!==undefined){ subs.splice(+e.target.dataset.d,1); renderSubs() } };
+$('addSub').onclick = () => { subs.push({n:'',g:'',c:1}); renderSubs() };
+renderSubs();
+
+/* Devises */
+const cur = ['TND','EUR','USD','GBP','CAD','SAR','AED','LYD','DZD','MAD','TRY','CNY'];
+let rates = null;
+['f_from','f_to'].forEach(id => $(id).innerHTML = cur.map(c=>`<option>${c}</option>`).join(''));
+$('f_from').value='EUR'; $('f_to').value='TND';
+function fx(){
+  const a = +$('f_amount').value, f=$('f_from').value, t=$('f_to').value;
+  const man = parseFloat($('f_manual').value);
+  let rate = null;
+  if (isFinite(man) && man>0) rate = man;
+  else if (rates && rates[f] && rates[t]) rate = rates[t]/rates[f];
+  if (rate===null || !(a>=0)){ $('f_res').textContent='—'; $('f_rate').textContent=''; return }
+  $('f_res').textContent = fmt(a*rate)+' '+t;
+  $('f_rate').textContent = `1 ${f} = ${fmt(rate,4)} ${t}`;
+}
+['f_amount','f_from','f_to','f_manual'].forEach(i => $(i).oninput = fx);
+$('swap').onclick = () => { const a=$('f_from').value; $('f_from').value=$('f_to').value; $('f_to').value=a; fx() };
+fetch('https://open.er-api.com/v6/latest/USD').then(r=>r.json()).then(d=>{
+  if (d && d.rates){ rates=d.rates; $('f_note').textContent='Taux mis à jour automatiquement (source : open.er-api.com).'; fx() }
+  else throw 0;
+}).catch(()=>{ $('f_note').textContent='Taux en ligne indisponibles : entre le taux à la main ci-dessous.' });
+</script>
+</body>
+</html>
